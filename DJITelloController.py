@@ -17,76 +17,75 @@ class TelloApp(QWidget):
         # Загрузка классификатора Хаара для распознавания лиц
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
+        # Установка начальной темы
+        self.current_theme = 'light'
+        self.set_light_theme()
+
     def initUI(self):
         self.setWindowTitle('Tello Drone Control')
-        self.resize(800, 600)  # Устанавливаем начальный размер окна, но не фиксируем его
+        self.setGeometry(100, 100, 800, 600)
 
-        self.setWindowIcon(QIcon('E:/Downloads/00002-800x600-Photoroom (1).png'))
+        # Установка иконки приложения
+        self.setWindowIcon(QIcon('E:/Downloads/00002-800x600-Photoroom (1).png'))  # Укажите путь к вашему файлу иконки
 
         self.layout = QVBoxLayout()
 
-        # Заголовок для видео
-        self.title_label = QLabel('Live Translation')
-        self.title_label.setStyleSheet("font-size: 20px; font-weight: bold;")
-        self.layout.addWidget(self.title_label)
-
-        # Создаем метку для видео
         self.video_label = QLabel('Video Feed')
-        self.video_label.setMinimumSize(640, 480)  # Устанавливаем минимальный размер для видео
         self.layout.addWidget(self.video_label)
 
-        # Создаем вертикальный layout для информации
         info_layout = QVBoxLayout()
-        self.temp_label = QLabel('Temperature: ')
+        self.temp_label = QLabel('Temperature: N/A')
         info_layout.addWidget(self.temp_label)
 
-        self.pitch_label = QLabel('Pitch: ')
+        self.pitch_label = QLabel('Pitch: N/A')
         info_layout.addWidget(self.pitch_label)
 
-        self.barometer_label = QLabel('Barometer: ')
+        self.barometer_label = QLabel('Barometer: N/A')
         info_layout.addWidget(self.barometer_label)
 
-        self.distance_label = QLabel('Distance from Start: ')
+        self.distance_label = QLabel('Distance from Start: N/A')
         info_layout.addWidget(self.distance_label)
 
-        self.battery_label = QLabel('Battery: ')
+        self.battery_label = QLabel('Battery: N/A')
         info_layout.addWidget(self.battery_label)
 
-        self.altitude_label = QLabel('Altitude: ')
+        self.altitude_label = QLabel('Altitude: N/A')
         info_layout.addWidget(self.altitude_label)
 
-        # Добавляем информацию в основной layout
         self.layout.addLayout(info_layout)
 
         self.movement_layout = QGridLayout()
 
+        # Установка фиксированного размера для всех кнопок
+        button_size = (150, 50)
+
         self.up_button = QPushButton('Move Up')
-        self.up_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.up_button.setFixedSize(*button_size)
         self.up_button.clicked.connect(self.move_up)
         self.movement_layout.addWidget(self.up_button, 0, 1)
 
         self.left_button = QPushButton('Move Left')
-        self.left_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.left_button.setFixedSize(*button_size)
         self.left_button.clicked.connect(self.move_left)
         self.movement_layout.addWidget(self.left_button, 1, 0)
 
         self.forward_button = QPushButton('Move Forward')
-        self.forward_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.forward_button.setFixedSize(*button_size)
         self.forward_button.clicked.connect(self.move_forward)
         self.movement_layout.addWidget(self.forward_button, 1, 1)
 
         self.right_button = QPushButton('Move Right')
-        self.right_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.right_button.setFixedSize(*button_size)
         self.right_button.clicked.connect(self.move_right)
         self.movement_layout.addWidget(self.right_button, 1, 2)
 
         self.back_button = QPushButton('Move Back')
-        self.back_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.back_button.setFixedSize(*button_size)
         self.back_button.clicked.connect(self.move_back)
         self.movement_layout.addWidget(self.back_button, 2, 1)
 
         self.down_button = QPushButton('Move Down')
-        self.down_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.down_button.setFixedSize(*button_size)
         self.down_button.clicked.connect(self.move_down)
         self.movement_layout.addWidget(self.down_button, 0, 2)
 
@@ -95,51 +94,48 @@ class TelloApp(QWidget):
         control_layout = QHBoxLayout()
 
         self.connect_button = QPushButton('Connect to Tello')
-        self.connect_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.connect_button.setFixedSize(*button_size)
         self.connect_button.clicked.connect(self.connect_to_tello)
         control_layout.addWidget(self.connect_button)
 
         self.takeoff_button = QPushButton('Takeoff')
-        self.takeoff_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.takeoff_button.setFixedSize(*button_size)
         self.takeoff_button.clicked.connect(self.takeoff)
         control_layout.addWidget(self.takeoff_button)
 
         self.land_button = QPushButton('Land')
-        self.land_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.land_button.setFixedSize(*button_size)
         self.land_button.clicked.connect(self.land)
         control_layout.addWidget(self.land_button)
 
         self.emergency_stop_button = QPushButton('Emergency Stop')
-        self.emergency_stop_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.emergency_stop_button.setFixedSize(*button_size)
         self.emergency_stop_button.clicked.connect(self.emergency_stop)
         control_layout.addWidget(self.emergency_stop_button)
 
-        self.theme_button = QPushButton('Dark Theme')
-        self.theme_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.theme_button = QPushButton('Change Theme')
+        self.theme_button.setFixedSize(*button_size)
         self.theme_button.clicked.connect(self.switch_theme)
         control_layout.addWidget(self.theme_button)
 
         self.layout.addLayout(control_layout)
 
         self.setLayout(self.layout)
-        self.current_theme = 'light'
-        self.set_light_theme()
 
     def connect_to_tello(self):
         try:
             self.tello.connect()
             self.tello.streamon()
-            self.temp_label.setText('Connected to Tello')
             self.timer.start(20)
         except Exception as e:
-            self.temp_label.setText(f'Error: {str(e)}')
+            self.temp_label.setText(f'Error connecting to Tello: {str(e)}')
 
     def update_frame(self):
         frame = self.tello.get_frame_read().frame
         if frame is not None:
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            # Преобразуем в оттенки серого
+            # Преобразуем в оттенки серого для распознавания лиц
             gray = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2GRAY)
 
             # Обнаруживаем лица
@@ -156,15 +152,14 @@ class TelloApp(QWidget):
             self.video_label.setPixmap(QPixmap.fromImage(q_img))
 
             # Обновляем информацию о состоянии дрона
-            self.get_battery()
-            self.get_pitch()
-            self.get_barometer()
-            self.get_distance()
-            self.get_altitude()
+            self.update_sensor_data()
 
-    def get_temperature(self):
-        temperature = "20°C"  # Здесь можно добавить реальное получение температуры
-        self.temp_label.setText(f'Temperature: {temperature}')
+    def update_sensor_data(self):
+        self.get_pitch()
+        self.get_barometer()
+        self.get_distance()
+        self.get_battery()
+        self.get_altitude()
 
     def get_pitch(self):
         pitch = self.tello.get_pitch()
@@ -232,21 +227,21 @@ class TelloApp(QWidget):
                 color: #cfcfcf;
             }
             QWidget {
-                background-color: #494949;
+                background-color: #494949;  /* Цвет фона для темной темы */
                 font-family: 'system', sans-serif;
                 font-size: 12px;
             }
             QPushButton {
-                background-color: #3c3c3c;
-                color: #cfcfcf;
-                border: none;
-                padding: 10px;
-                border-radius: 5px;
+                background-color: #3c3c3c;  /* Цвет фона кнопок для темной темы */
+                color: #cfcfcf;              /* Цвет текста кнопок для темной темы */
+                border: none;                /* Убираем рамку */
+                padding: 10px;               /* Отступы внутри кнопок */
+                border-radius: 5px;          /* Закругление углов кнопок */
                 font-family: 'system', sans-serif;
                 font-size: 12px;
             }
             QPushButton:hover {
-                background-color: #2f2f2f;
+                background-color: #2f2f2f;   /* Цвет кнопки при наведении для темной темы (темнее) */
             }
         """)
 
@@ -256,21 +251,21 @@ class TelloApp(QWidget):
                 color: #351c75;
             }
             QWidget {
-                background-color: #8e7cc3;
+                background-color: #8e7cc3;  /* Цвет фона для фиолетовой темы */
                 font-family: 'system', sans-serif;
                 font-size: 12px;
             }
             QPushButton {
-                background-color: #b4a7d6;
-                color: #351c75;
-                border: none;
-                padding: 10px;
-                border-radius: 5px;
+                background-color: #b4a7d6;  /* Цвет фона кнопок для фиолетовой темы */
+                color: #351c75;              /* Цвет текста кнопок для фиолетовой темы */
+                border: none;                /* Убираем рамку */
+                padding: 10px;               /* Отступы внутри кнопок */
+                border-radius: 5px;          /* Закругление углов кнопок */
                 font-family: 'system', sans-serif;
                 font-size: 12px;
             }
             QPushButton:hover {
-                background-color: #7768a4;
+                background-color: #7768a4;   /* Цвет кнопки при наведении для фиолетовой темы */
             }
         """)
 
@@ -280,21 +275,21 @@ class TelloApp(QWidget):
                 color: #2b2b2b;
             }
             QWidget {
-                background-color: #ececec;
+                background-color: #ececec;  /* Цвет фона для светлой темы */
                 font-family: 'system', sans-serif;
                 font-size: 12px;
             }
             QPushButton {
-                background-color: #e2e2e2;
-                color: #2b2b2b;
-                border: none;
-                padding: 10px;
-                border-radius: 5px;
+                background-color: #e2e2e2;  /* Цвет фона кнопок для светлой темы */
+                color: #2b2b2b;              /* Цвет текста кнопок для светлой темы */
+                border: none;                /* Убираем рамку */
+                padding: 10px;               /* Отступы внутри кнопок */
+                border-radius: 5px;          /* Закругление углов кнопок */
                 font-family: 'system', sans-serif;
                 font-size: 12px;
             }
             QPushButton:hover {
-                background-color: #d5d5d5;
+                background-color: #d5d5d5;   /* Цвет кнопки при наведении для светлой темы */
             }
         """)
 
@@ -302,15 +297,15 @@ class TelloApp(QWidget):
         if self.current_theme == 'light':
             self.set_dark_theme()
             self.current_theme = 'dark'
-            self.theme_button.setText('Purple Theme')
+            self.theme_button.setText('Switch to Purple Theme')
         elif self.current_theme == 'dark':
             self.set_purple_theme()
             self.current_theme = 'purple'
-            self.theme_button.setText('Light Theme')
+            self.theme_button.setText('Switch to Light Theme')
         else:
             self.set_light_theme()
             self.current_theme = 'light'
-            self.theme_button.setText('Dark Theme')
+            self.theme_button.setText('Switch to Dark Theme')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
