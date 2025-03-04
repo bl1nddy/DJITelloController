@@ -1,7 +1,7 @@
 import sys
 import cv2
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QGridLayout, QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QGridLayout, QHBoxLayout, QSizePolicy
 from PyQt5.QtGui import QImage, QPixmap, QIcon
 from PyQt5.QtCore import QTimer
 from djitellopy import Tello
@@ -25,13 +25,15 @@ class TelloApp(QWidget):
 
         self.layout = QVBoxLayout()
 
-        # Создаем горизонтальный layout для видео и информации
-        video_info_layout = QHBoxLayout()
+        # Заголовок для видео
+        self.title_label = QLabel('Live Translation')
+        self.title_label.setStyleSheet("font-size: 20px; font-weight: bold;")
+        self.layout.addWidget(self.title_label)
 
         # Создаем метку для видео
         self.video_label = QLabel('Video Feed')
         self.video_label.setMinimumSize(640, 480)  # Устанавливаем минимальный размер для видео
-        video_info_layout.addWidget(self.video_label)
+        self.layout.addWidget(self.video_label)
 
         # Создаем вертикальный layout для информации
         info_layout = QVBoxLayout()
@@ -53,11 +55,8 @@ class TelloApp(QWidget):
         self.altitude_label = QLabel('Altitude: ')
         info_layout.addWidget(self.altitude_label)
 
-        # Добавляем информацию в горизонтальный layout
-        video_info_layout.addLayout(info_layout)
-
-        # Добавляем горизонтальный layout в основной layout
-        self.layout.addLayout(video_info_layout)
+        # Добавляем информацию в основной layout
+        self.layout.addLayout(info_layout)
 
         self.movement_layout = QGridLayout()
 
