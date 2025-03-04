@@ -25,9 +25,15 @@ class TelloApp(QWidget):
 
         self.layout = QVBoxLayout()
 
-        self.video_label = QLabel('Video Feed')
-        self.layout.addWidget(self.video_label)
+        # Создаем горизонтальный layout для видео и информации
+        video_info_layout = QHBoxLayout()
 
+        # Создаем метку для видео
+        self.video_label = QLabel('Video Feed')
+        self.video_label.setFixedSize(640, 480)  # Устанавливаем фиксированный размер для видео
+        video_info_layout.addWidget(self.video_label)
+
+        # Создаем вертикальный layout для информации
         info_layout = QVBoxLayout()
         self.temp_label = QLabel('Temperature: ')
         info_layout.addWidget(self.temp_label)
@@ -47,7 +53,11 @@ class TelloApp(QWidget):
         self.altitude_label = QLabel('Altitude: ')
         info_layout.addWidget(self.altitude_label)
 
-        self.layout.addLayout(info_layout)
+        # Добавляем информацию в горизонтальный layout
+        video_info_layout.addLayout(info_layout)
+
+        # Добавляем горизонтальный layout в основной layout
+        self.layout.addLayout(video_info_layout)
 
         self.movement_layout = QGridLayout()
 
@@ -146,8 +156,15 @@ class TelloApp(QWidget):
             q_img = QImage(frame_rgb.data, w, h, bytes_per_line, QImage.Format_RGB888)
             self.video_label.setPixmap(QPixmap.fromImage(q_img))
 
+            # Обновляем информацию о состоянии дрона
+            self.get_battery()
+            self.get_pitch()
+            self.get_barometer()
+            self.get_distance()
+            self.get_altitude()
+
     def get_temperature(self):
-        temperature = "20°C"
+        temperature = "20°C"  # Здесь можно добавить реальное получение температуры
         self.temp_label.setText(f'Temperature: {temperature}')
 
     def get_pitch(self):
@@ -173,12 +190,10 @@ class TelloApp(QWidget):
     def takeoff(self):
         self.tello.takeoff()
         self.temp_label.setText('Drone Taking Off')
-        self.get_battery()
 
     def land(self):
         self.tello.land()
         self.temp_label.setText('Drone Landing')
-        self.get_battery()
 
     def emergency_stop(self):
         self.tello.land()
@@ -187,32 +202,26 @@ class TelloApp(QWidget):
     def move_forward(self):
         self.tello.move_forward(30)
         self.temp_label.setText('Moved Forward')
-        self.get_battery()
 
     def move_back(self):
         self.tello.move_back(30)
         self.temp_label.setText('Moved Back')
-        self.get_battery()
 
     def move_left(self):
         self.tello.move_left(30)
         self.temp_label.setText('Moved Left')
-        self.get_battery()
 
     def move_right(self):
         self.tello.move_right(30)
         self.temp_label.setText('Moved Right')
-        self.get_battery()
 
     def move_up(self):
         self.tello.move_up(30)
         self.temp_label.setText('Moved Up')
-        self.get_battery()
 
     def move_down(self):
         self.tello.move_down(30)
         self.temp_label.setText('Moved Down')
-        self.get_battery()
 
     def closeEvent(self, event):
         self.tello.end()
