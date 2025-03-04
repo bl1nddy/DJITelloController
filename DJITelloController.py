@@ -2,7 +2,7 @@ import sys
 import cv2
 import numpy as np
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QGridLayout, QHBoxLayout
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtGui import QImage, QPixmap, QIcon
 from PyQt5.QtCore import QTimer
 from djitellopy import Tello
 
@@ -17,6 +17,8 @@ class TelloApp(QWidget):
     def initUI(self):
         self.setWindowTitle('Tello Drone Control')
         self.setGeometry(100, 100, 800, 600)
+
+        self.setWindowIcon(QIcon('E:/Downloads/00002-800x600-Photoroom (1).png'))
 
         self.layout = QVBoxLayout()
 
