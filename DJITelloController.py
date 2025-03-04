@@ -19,7 +19,7 @@ class TelloApp(QWidget):
 
     def initUI(self):
         self.setWindowTitle('Tello Drone Control')
-        self.setGeometry(100, 100, 800, 600)
+        self.resize(800, 600)  # Устанавливаем начальный размер окна, но не фиксируем его
 
         self.setWindowIcon(QIcon('E:/Downloads/00002-800x600-Photoroom (1).png'))
 
@@ -30,7 +30,7 @@ class TelloApp(QWidget):
 
         # Создаем метку для видео
         self.video_label = QLabel('Video Feed')
-        self.video_label.setFixedSize(640, 480)  # Устанавливаем фиксированный размер для видео
+        self.video_label.setMinimumSize(640, 480)  # Устанавливаем минимальный размер для видео
         video_info_layout.addWidget(self.video_label)
 
         # Создаем вертикальный layout для информации
@@ -62,32 +62,32 @@ class TelloApp(QWidget):
         self.movement_layout = QGridLayout()
 
         self.up_button = QPushButton('Move Up')
-        self.up_button.setFixedSize(150, 50)
+        self.up_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.up_button.clicked.connect(self.move_up)
         self.movement_layout.addWidget(self.up_button, 0, 1)
 
         self.left_button = QPushButton('Move Left')
-        self.left_button.setFixedSize(150, 50)
+        self.left_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.left_button.clicked.connect(self.move_left)
         self.movement_layout.addWidget(self.left_button, 1, 0)
 
         self.forward_button = QPushButton('Move Forward')
-        self.forward_button.setFixedSize(150, 50)
+        self.forward_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.forward_button.clicked.connect(self.move_forward)
         self.movement_layout.addWidget(self.forward_button, 1, 1)
 
         self.right_button = QPushButton('Move Right')
-        self.right_button.setFixedSize(150, 50)
+        self.right_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.right_button.clicked.connect(self.move_right)
         self.movement_layout.addWidget(self.right_button, 1, 2)
 
         self.back_button = QPushButton('Move Back')
-        self.back_button.setFixedSize(150, 50)
+        self.back_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.back_button.clicked.connect(self.move_back)
         self.movement_layout.addWidget(self.back_button, 2, 1)
 
         self.down_button = QPushButton('Move Down')
-        self.down_button.setFixedSize(150, 50)
+        self.down_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.down_button.clicked.connect(self.move_down)
         self.movement_layout.addWidget(self.down_button, 0, 2)
 
@@ -96,27 +96,27 @@ class TelloApp(QWidget):
         control_layout = QHBoxLayout()
 
         self.connect_button = QPushButton('Connect to Tello')
-        self.connect_button.setFixedSize(150, 50)
+        self.connect_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.connect_button.clicked.connect(self.connect_to_tello)
         control_layout.addWidget(self.connect_button)
 
         self.takeoff_button = QPushButton('Takeoff')
-        self.takeoff_button.setFixedSize(150, 50)
+        self.takeoff_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.takeoff_button.clicked.connect(self.takeoff)
         control_layout.addWidget(self.takeoff_button)
 
         self.land_button = QPushButton('Land')
-        self.land_button.setFixedSize(150, 50)
+        self.land_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.land_button.clicked.connect(self.land)
         control_layout.addWidget(self.land_button)
 
         self.emergency_stop_button = QPushButton('Emergency Stop')
-        self.emergency_stop_button.setFixedSize(150, 50)
+        self.emergency_stop_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.emergency_stop_button.clicked.connect(self.emergency_stop)
         control_layout.addWidget(self.emergency_stop_button)
 
         self.theme_button = QPushButton('Dark Theme')
-        self.theme_button.setFixedSize(150, 50)
+        self.theme_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.theme_button.clicked.connect(self.switch_theme)
         control_layout.addWidget(self.theme_button)
 
