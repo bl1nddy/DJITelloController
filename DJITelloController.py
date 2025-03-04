@@ -14,6 +14,9 @@ class TelloApp(QWidget):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_frame)
 
+        # Загрузка классификатора Хаара для распознавания лиц
+        self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
     def initUI(self):
         self.setWindowTitle('Tello Drone Control')
         self.setGeometry(100, 100, 800, 600)
@@ -125,10 +128,22 @@ class TelloApp(QWidget):
     def update_frame(self):
         frame = self.tello.get_frame_read().frame
         if frame is not None:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            h, w, ch = frame.shape
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            # Преобразуем в оттенки серого
+            gray = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2GRAY)
+
+            # Обнаруживаем лица
+            faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+
+            # Обводим лица
+            for (x, y, w, h) in faces:
+                cv2.rectangle(frame_rgb, (x, y), (x + w, y + h), (255, 0, 0), 2)  
+                cv2.putText(frame_rgb, 'Face', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+
+            h, w, ch = frame_rgb.shape
             bytes_per_line = ch * w
-            q_img = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+            q_img = QImage(frame_rgb.data, w, h, bytes_per_line, QImage.Format_RGB888)
             self.video_label.setPixmap(QPixmap.fromImage(q_img))
 
     def get_temperature(self):
@@ -265,7 +280,7 @@ class TelloApp(QWidget):
                 background-color: #e2e2e2;
                 color: #2b2b2b;
                 border: none;
-                                padding: 10px;
+                padding: 10px;
                 border-radius: 5px;
                 font-family: 'system', sans-serif;
                 font-size: 12px;
