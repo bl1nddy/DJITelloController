@@ -1,6 +1,7 @@
 import sys
 import cv2
 import numpy as np
+import mediapipe as mp
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QGridLayout, QHBoxLayout, QSizePolicy
 from PyQt5.QtGui import QImage, QPixmap, QIcon
 from PyQt5.QtCore import QTimer
@@ -16,6 +17,11 @@ class TelloApp(QWidget):
 
         # Загрузка классификатора Хаара для распознавания лиц
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+        # Инициализация MediaPipe
+        self.mp_hands = mp.solutions.hands
+        self.hands = self.mp_hands.Hands()
+        self.mp_draw = mp.solutions.drawing_utils
 
         # Установка начальной темы
         self.current_theme = 'light'
@@ -126,7 +132,7 @@ class TelloApp(QWidget):
         try:
             self.tello.connect()
             self.tello.streamon()
-            self.timer.start(20)
+            self.timer.start(10)  # Установите интервал на 10 мс для увеличения FPS
             self.temp_label.setText('Подключено к Tello')
         except Exception as e:
             self.temp_label.setText(f'Ошибка подключения к Tello: {str(e)}')
@@ -142,13 +148,120 @@ class TelloApp(QWidget):
             # Обнаруживаем лица
             faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
 
-            # Определяем цвет обводки в зависимости от темы
-            if self.current_theme == 'light':
-                color = (0, 0, 0)  # Черный цвет для светлой темы
-            elif self.current_theme == 'dark':
-                color = (255, 0, 0)  # Красный цвет для темной темы
-            else:  # Фиолетовая тема
-                color = (255, 255, 0)  # Желтый цвет для фиолетовой темы
+            # Определяем цвет для обводки лиц
+            color = (255, 255, 255)  # Белый цвет в формате BGR
+
+            # Обработка жестов рук
+            results = self.hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            if results.multi_hand_landmarks:
+                for hand_landmarks in results.multi_hand_landmarks:
+                    self.mp_draw.draw_landmarks(frame_rgb, hand_landmarks, self.mp_hands.HAND_CONNECTIONS)
+
+                    # Определяем жесты
+                    thumb_tip = hand_landmarks.landmark[self.mp_hands.HandLandmark.THUMB_TIP]
+                    index_tip = hand_landmarks.landmark[self.mp_hands.HandLandmark.INDEX_FINGER_TIP]
+                    middle_tip = hand_landmarks.landmark[self.mp_hands.HandLandmark.MIDDLE_FINGER_TIP]
+                    ring_tip = hand_landmarks.landmark[self.mp_hands.HandLandmark.RING_FINGER_TIP]
+                    pinky_tip = hand_landmarks.landmark[self.mp_hands.HandLandmark.PINKY_TIP]
+
+                    # Проверка на ладонь (открытая рука)
+                    if thumb_tip.y < index_tip.y and thumb_tip.y < middle_tip.y:
+                        self.land()  # Садимся при показании ладони
+                        self.temp_label.setText('Ладонь обнаружена: Дрон садится')
+                        break
+
+                    # Проверка на кулак (сжатая рука)
+                    if thumb_tip.y > index_tip.y and thumb_tip.y > middle_tip.y:
+                        try:
+                            self.tello.rotate_clockwise(90)  # Поворачиваем на 90 градусов
+                            self.temp_label.setText('Кулак обнаружен: Дрон поворачивается на 90 градусов')
+                        except Exception as e:
+                            self.temp_label.setText(f'Ошибка при повороте: {str(e)}')
+                        break
+
+                    # Проверка на жест "fuck" (все пальцы кроме указательного и большого)
+                    if (index_tip.y > thumb_tip.y and
+                        middle_tip.y > thumb_tip.y and
+                        ring_tip.y > thumb_tip.y and
+                        pinky_tip.y > thumb_tip.y):
+                        try:
+                            self.tello.flip('b')  # Делаем сальто
+                            self.temp_label.setText('Жест "fuck" обнаружен: Дрон делает сальто')
+                        except Exception as e:
+                            self.temp_label.setText(f'Ошибка при сальто: {str(e)}')
+                        break
+
+                    # Проверка на жест "указательный палец вверх"
+                    if (index_tip.y < thumb_tip.y and
+                        middle_tip.y > thumb_tip.y and
+                        ring_tip.y > thumb_tip.y and
+                        pinky_tip.y > thumb_tip.y):
+                        try:
+                            self.tello.move_up(20)  # Летим вверх на 20 см
+                            self.temp_label.setText('Указательный палец вверх обнаружен: Дрон летит вверх на 20 см')
+                        except Exception as e:
+                            self.temp_label.setText(f'Ошибка при движении вверх: {str(e)}')
+                        break
+
+                    # Проверка на жест "указательный палец вниз"
+                    if (index_tip.y > thumb_tip.y and
+                        middle_tip.y < thumb_tip.y and
+                        ring_tip.y > thumb_tip.y and
+                        pinky_tip.y > thumb_tip.y):
+                        try:
+                            self.tello.move_down(20)  # Летим вниз на 20 см
+                            self.temp_label.setText('Указательный палец вниз обнаружен: Дрон летит вниз на 20 см')
+                        except Exception as e:
+                            self.temp_label.setText(f'Ошибка при движении вниз: {str(e)}')
+                        break
+
+                    # Проверка на жест "движение вперед"
+                    if (index_tip.y < thumb_tip.y and
+                        middle_tip.y < thumb_tip.y and
+                        ring_tip.y > thumb_tip.y and
+                        pinky_tip.y > thumb_tip.y):
+                        try:
+                            self.tello.move_forward(30)  # Движение вперед на 30 см
+                            self.temp_label.setText('Движение вперед обнаружено: Дрон движется вперед на 30 см')
+                        except Exception as e:
+                            self.temp_label.setText(f'Ошибка при движении вперед: {str(e)}')
+                        break
+
+                    # Проверка на жест "движение назад"
+                    if (index_tip.y > thumb_tip.y and
+                        middle_tip.y > thumb_tip.y and
+                        ring_tip.y < thumb_tip.y and
+                        pinky_tip.y < thumb_tip.y):
+                        try:
+                            self.tello.move_back(30)  # Движение назад на 30 см
+                            self.temp_label.setText('Движение назад обнаружено: Дрон движется назад на 30 см')
+                        except Exception as e:
+                            self.temp_label.setText(f'Ошибка при движении назад: {str(e)}')
+                        break
+
+                    # Проверка на жест "движение влево"
+                    if (index_tip.x < thumb_tip.x and
+                        middle_tip.x < thumb_tip.x and
+                        ring_tip.x > thumb_tip.x and
+                        pinky_tip.x > thumb_tip.x):
+                        try:
+                            self.tello.move_left(30)  # Движение влево на 30 см
+                            self.temp_label.setText('Движение влево обнаружено: Дрон движется влево на 30 см')
+                        except Exception as e:
+                            self.temp_label.setText(f'Ошибка при движении влево: {str(e)}')
+                        break
+
+                    # Проверка на жест "движение вправо"
+                    if (index_tip.x > thumb_tip.x and
+                        middle_tip.x > thumb_tip.x and
+                        ring_tip.x < thumb_tip.x and
+                        pinky_tip.x < thumb_tip.x):
+                        try:
+                            self.tello.move_right(30)  # Движение вправо на 30 см
+                            self.temp_label.setText('Движение вправо обнаружено: Дрон движется вправо на 30 см')
+                        except Exception as e:
+                            self.temp_label.setText(f'Ошибка при движении вправо: {str(e)}')
+                        break
 
             # Обводим лица
             for (x, y, w, h) in faces:
@@ -191,40 +304,67 @@ class TelloApp(QWidget):
         self.altitude_label.setText(f'Высота: {altitude} см')
 
     def takeoff(self):
-        self.tello.takeoff()
-        self.temp_label.setText('Дрон взлетел')
+        try:
+            self.tello.takeoff()
+            self.temp_label.setText('Дрон взлетел')
+        except Exception as e:
+            self.temp_label.setText(f'Ошибка при взлете: {str(e)}')
 
     def land(self):
-        self.tello.land()
-        self.temp_label.setText('Дрон приземляется')
+        try:
+            self.tello.land()
+            self.temp_label.setText('Дрон приземляется')
+        except Exception as e:
+            self.temp_label.setText(f'Ошибка при посадке: {str(e)}')
 
     def emergency_stop(self):
-        self.tello.land()
-        self.temp_label.setText('Экстренная посадка активирована')
+        try:
+            self.tello.land()
+            self.temp_label.setText('Экстренная посадка активирована')
+        except Exception as e:
+            self.temp_label.setText(f'Ошибка при экстренной посадке: {str(e)}')
 
     def move_forward(self):
-        self.tello.move_forward(30)
-        self.temp_label.setText('Движение вперед')
+        try:
+            self.tello.move_forward(30)
+            self.temp_label.setText('Движение вперед')
+        except Exception as e:
+            self.temp_label.setText(f'Ошибка при движении вперед: {str(e)}')
 
     def move_back(self):
-        self.tello.move_back(30)
-        self.temp_label.setText('Движение назад')
+        try:
+            self.tello.move_back(30)
+            self.temp_label.setText('Движение назад')
+        except Exception as e:
+            self.temp_label.setText(f'Ошибка при движении назад: {str(e)}')
 
     def move_left(self):
-        self.tello.move_left(30)
-        self.temp_label.setText('Движение влево')
+        try:
+            self.tello.move_left(30)
+            self.temp_label.setText('Движение влево')
+        except Exception as e:
+            self.temp_label.setText(f'Ошибка при движении влево: {str(e)}')
 
     def move_right(self):
-        self.tello.move_right(30)
-        self.temp_label.setText('Движение вправо')
+        try:
+            self.tello.move_right(30)
+            self.temp_label.setText('Движение вправо')
+        except Exception as e:
+            self.temp_label.setText(f'Ошибка при движении вправо: {str(e)}')
 
     def move_up(self):
-        self.tello.move_up(30)
-        self.temp_label.setText('Движение вверх')
+        try:
+            self.tello.move_up(30)
+            self.temp_label.setText('Движение вверх')
+        except Exception as e:
+            self.temp_label.setText(f'Ошибка при движении вверх: {str(e)}')
 
     def move_down(self):
-        self.tello.move_down(30)
-        self.temp_label.setText('Движение вниз')
+        try:
+            self.tello.move_down(30)
+            self.temp_label.setText('Движение вниз')
+        except Exception as e:
+            self.temp_label.setText(f'Ошибка при движении вниз: {str(e)}')
 
     def closeEvent(self, event):
         self.tello.end()
