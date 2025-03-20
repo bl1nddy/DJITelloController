@@ -15,7 +15,7 @@ class TelloApp(QWidget):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_frame)
 
-        # Загрузка классификатора Хаара для распознавания лиц
+        # Загрузка распознавания лиц
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
         # Инициализация MediaPipe
@@ -32,7 +32,7 @@ class TelloApp(QWidget):
         self.setGeometry(100, 100, 800, 600)
 
         # Установка иконки приложения
-        self.setWindowIcon(QIcon('E:/Downloads/00002-800x600-Photoroom (1).png'))  # Укажите путь к вашему файлу иконки
+        self.setWindowIcon(QIcon('Иконка.png')) 
 
         self.layout = QVBoxLayout()
 
@@ -166,29 +166,17 @@ class TelloApp(QWidget):
 
                     # Проверка на ладонь (открытая рука)
                     if thumb_tip.y < index_tip.y and thumb_tip.y < middle_tip.y:
-                        self.land()  # Садимся при показании ладони
+                        self.land() 
                         self.temp_label.setText('Ладонь обнаружена: Дрон садится')
                         break
 
                     # Проверка на кулак (сжатая рука)
                     if thumb_tip.y > index_tip.y and thumb_tip.y > middle_tip.y:
                         try:
-                            self.tello.rotate_clockwise(90)  # Поворачиваем на 90 градусов
+                            self.tello.rotate_clockwise(90) 
                             self.temp_label.setText('Кулак обнаружен: Дрон поворачивается на 90 градусов')
                         except Exception as e:
                             self.temp_label.setText(f'Ошибка при повороте: {str(e)}')
-                        break
-
-                    # Проверка на жест "fuck" (все пальцы кроме указательного и большого)
-                    if (index_tip.y > thumb_tip.y and
-                        middle_tip.y > thumb_tip.y and
-                        ring_tip.y > thumb_tip.y and
-                        pinky_tip.y > thumb_tip.y):
-                        try:
-                            self.tello.flip('b')  # Делаем сальто
-                            self.temp_label.setText('Жест "fuck" обнаружен: Дрон делает сальто')
-                        except Exception as e:
-                            self.temp_label.setText(f'Ошибка при сальто: {str(e)}')
                         break
 
                     # Проверка на жест "указательный палец вверх"
@@ -197,7 +185,7 @@ class TelloApp(QWidget):
                         ring_tip.y > thumb_tip.y and
                         pinky_tip.y > thumb_tip.y):
                         try:
-                            self.tello.move_up(20)  # Летим вверх на 20 см
+                            self.tello.move_up(20) 
                             self.temp_label.setText('Указательный палец вверх обнаружен: Дрон летит вверх на 20 см')
                         except Exception as e:
                             self.temp_label.setText(f'Ошибка при движении вверх: {str(e)}')
@@ -209,7 +197,7 @@ class TelloApp(QWidget):
                         ring_tip.y > thumb_tip.y and
                         pinky_tip.y > thumb_tip.y):
                         try:
-                            self.tello.move_down(20)  # Летим вниз на 20 см
+                            self.tello.move_down(20)
                             self.temp_label.setText('Указательный палец вниз обнаружен: Дрон летит вниз на 20 см')
                         except Exception as e:
                             self.temp_label.setText(f'Ошибка при движении вниз: {str(e)}')
@@ -221,7 +209,7 @@ class TelloApp(QWidget):
                         ring_tip.y > thumb_tip.y and
                         pinky_tip.y > thumb_tip.y):
                         try:
-                            self.tello.move_forward(30)  # Движение вперед на 30 см
+                            self.tello.move_forward(30)
                             self.temp_label.setText('Движение вперед обнаружено: Дрон движется вперед на 30 см')
                         except Exception as e:
                             self.temp_label.setText(f'Ошибка при движении вперед: {str(e)}')
@@ -233,7 +221,7 @@ class TelloApp(QWidget):
                         ring_tip.y < thumb_tip.y and
                         pinky_tip.y < thumb_tip.y):
                         try:
-                            self.tello.move_back(30)  # Движение назад на 30 см
+                            self.tello.move_back(30)
                             self.temp_label.setText('Движение назад обнаружено: Дрон движется назад на 30 см')
                         except Exception as e:
                             self.temp_label.setText(f'Ошибка при движении назад: {str(e)}')
@@ -245,7 +233,7 @@ class TelloApp(QWidget):
                         ring_tip.x > thumb_tip.x and
                         pinky_tip.x > thumb_tip.x):
                         try:
-                            self.tello.move_left(30)  # Движение влево на 30 см
+                            self.tello.move_left(30)
                             self.temp_label.setText('Движение влево обнаружено: Дрон движется влево на 30 см')
                         except Exception as e:
                             self.temp_label.setText(f'Ошибка при движении влево: {str(e)}')
@@ -257,7 +245,7 @@ class TelloApp(QWidget):
                         ring_tip.x < thumb_tip.x and
                         pinky_tip.x < thumb_tip.x):
                         try:
-                            self.tello.move_right(30)  # Движение вправо на 30 см
+                            self.tello.move_right(30)
                             self.temp_label.setText('Движение вправо обнаружено: Дрон движется вправо на 30 см')
                         except Exception as e:
                             self.temp_label.setText(f'Ошибка при движении вправо: {str(e)}')
